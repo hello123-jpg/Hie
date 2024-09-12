@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify to Access</title>
+    <script>
+        // Function to get query parameters from the URL
+        function getQueryParams() {
+            const params = new URLSearchParams(window.location.search);
+            return params;
+        }
+
+        // Set the current time and expiration time (midnight)
+        function getISTMidnight() {
+            const now = new Date();
+            const midnight = new Date();
+            midnight.setHours(24, 0, 0, 0);  // Set to midnight
+            return midnight.getTime();  // Return timestamp for midnight
+        }
+
+        // Check if user is already verified
+        function checkVerification() {
+            const isVerified = localStorage.getItem('verified');
+            const expiryTime = localStorage.getItem('expiryTime');
+            const currentTime = new Date().getTime();
+
+            // Check if user completed the verification
+            const params = getQueryParams();
+            const token = params.get('token');
+
+            // If the token exists in the URL, grant access and store it
+            if (token === 'verified') {
+                const expiryTime = getISTMidnight();
+                localStorage.setItem('verified', 'true');
+                localStorage.setItem('expiryTime', expiryTime);
+                window.history.replaceState({}, document.title, window.location.pathname); // Remove token from URL
+            }
+
+            // If verified and before midnight, grant access
+            if (isVerified === 'true' && expiryTime > currentTime) {
+                document.getElementById('content').innerHTML = `
+                    <h1>Welcome to the Website!</h1>
+                    <p>You have unlimited access until 12:00 AM IST. Enjoy your stay!</p>`;
+            } else {
+                showVerificationPage();
+            }
+        }
+
+        // Show the verification page with the URL shortener
+        function showVerificationPage() {
+            document.getElementById('content').innerHTML = `
+                <h2>Please verify through the URL shortener to access the website</h2>
+                <a href="https://publicearn.com/cd8KWceG?redirect=https://yourwebsite.com?token=verified" target="_blank">Click here to verify</a>
+                <br><br>
+                <p>Once you complete the verification, you will be redirected back here with access.</p>
+            `;
+        }
+
+        // Run the verification check when the page loads
+        window.onload = function() {
+            checkVerification();
+        };
+    </script>
+</head>
+<body>
+    <div id="content"></div>
+</body>
+</html>
